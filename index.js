@@ -30,10 +30,11 @@ console.log('örnek görev:', ilkiniDon(['as','sa'],function(metin){return metin
   Aşağıdaki skor1 ve skor2 kodlarını inceleyiniz ve aşağıdaki soruları altına not alarak cevaplayın
   
   1. skor1 ve skor2 arasındaki fark nedir?
-  
+  closure alanları farklı
   2. Hangisi bir closure kullanmaktadır? Nasıl tarif edebilirsin? (yarınki derste öğreneceksin :) )
-  
+  ikisi de kullanmaktadır
   3. Hangi durumda skor1 tercih edilebilir? Hangi durumda skor2 daha mantıklıdır?
+  üretilen skora göre hangisi daha fazlaysa
 */
 
 // skor1 kodları
@@ -64,9 +65,10 @@ Aşağıdaki takimSkoru() fonksiyonununda aşağıdakileri yapınız:
 Not: Bu fonskiyon, aşağıdaki diğer görevler için de bir callback fonksiyonu olarak da kullanılacak
 */
 
-function takimSkoru(/*Kodunuzu buraya yazınız*/){
-    /*Kodunuzu buraya yazınız*/
+function takimSkoru(){
+    return Math.floor(Math.random() * 3-2) + 10;
 }
+
 
 
 
@@ -86,10 +88,20 @@ Aşağıdaki macSonucu() fonksiyonununda aşağıdakileri yapınız:
 }
 */ 
 
-function macSonucu(/*Kodunuzu buraya yazınız*/){
-  /*Kodunuzu buraya yazınız*/
+function macSonucu(callback,ceyrekSayı){
+  const durum={
+    evSkoru:0,
+    konukSkoru:0,
+  }
+  for(let i=1;i<=ceyrekSayı;i++){
+    for(let takım in durum) {
+      durum[takım]+=callback();
+      console.log(durum);
+    }
+  }
+  return durum;
 }
-
+console.log(macSonucu(takimSkoru, 4))
 
 
 
@@ -109,11 +121,19 @@ Aşağıdaki periyotSkoru() fonksiyonununda aşağıdakileri yapınız:
   */
 
 
-function periyotSkoru(/*Kodunuzu buraya yazınız*/) {
-  /*Kodunuzu buraya yazınız*/
+function periyotSkoru(callback) {
+ const result={
+  evTakimi:0,
+  komşuTakimi:0,
+ }
+ for (let taraf in result){
+  result[taraf]=callback();
+ 
+ }
+return result;
 
 }
-
+console.log(periyotSkoru(takimSkoru))
 
 /* Zorlayıcı Görev 5: skorTabelasi() 
 Aşağıdaki skorTabelasi() fonksiyonunu kullanarak aşağıdakileri yapınız:
@@ -146,9 +166,50 @@ MAÇ UZAR ise skorTabelasi(periyotSkoru,takimSkoru,4)
 ] */
 // NOTE: Bununla ilgili bir test yoktur. Eğer logladığınız sonuçlar yukarıdakine benziyor ise tmamlandı sayabilirsiniz.
 
-function skorTabelasi(/*Kodunuzu buraya yazınız*/) {
-  /*Kodunuzu buraya yazınız*/
+function skorTabelasi(periodScoreCb, teamScoreCb, quarter) {
+  const scoreArray = [];
+  let macToplam = {
+    EvSahibi: 0,
+    KonukTakim: 0,
+  };
+
+  function testExtension(q) {
+    if (quarter == q && macToplam.EvSahibi == macToplam.KonukTakim) {
+      uzatmaNo = uzatmaNo + 1;
+      const uzatmaSkor = periodScoreCb(teamScoreCb);
+      macToplam.EvSahibi += uzatmaSkor.EvSahibi;
+      macToplam.KonukTakim += uzatmaSkor.KonukTakim;
+
+      scoreArray.push(
+        `${uzatmaNo}. Uzatma: Ev Sahibi ${uzatmaSkor.EvSahibi} - Konuk Takım  ${uzatmaSkor.KonukTakim}`
+      );
+      console.log("Sonuç uzatma ", uzatmaNo, macToplam);
+      if (macToplam.EvSahibi == macToplam.KonukTakim) {
+        testExtension(q);
+      }
+    }
+  }
+  let uzatmaNo = 0;
+  // her periyod için tur
+  for (let i = 1; i <= quarter; i++) {
+    const periodResult = periodScoreCb(teamScoreCb);
+    macToplam.EvSahibi += periodResult.EvSahibi;
+    macToplam.KonukTakim += periodResult.KonukTakim;
+
+    const scoreBacktick = `${i}. Periyot: Ev Sahibi ${periodResult.EvSahibi} - Konuk Takım ${periodResult.KonukTakim}`;
+    console.log("Sonuç ", i, macToplam);
+    scoreArray.push(scoreBacktick);
+    testExtension(i); // berabereyse yine uzatma
+  }
+
+  scoreArray.push(
+    `Maç Sonucu: Ev Sahibi ${macToplam.EvSahibi} - Konuk Takım ${macToplam.KonukTakim}`
+  );
+
+  return scoreArray;
 }
+console.log("Görev 5", skorTabelasi(periyotSkoru, takimSkoru, 2));
+
 
 
 
